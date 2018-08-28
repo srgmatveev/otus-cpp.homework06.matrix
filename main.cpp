@@ -20,7 +20,7 @@ int main(int argc, char const *argv[])
         {
             for (auto j{1}; j < 9; ++j)
             {
-                if (j != 1 or j != 8)
+                if (j != 1)
                     std::cout << ' ';
                 std::cout << matrix[i][j];
             }
@@ -29,7 +29,7 @@ int main(int argc, char const *argv[])
 
         std::cout << matrix.size() << std::endl;
 
-        for (auto& item : matrix)
+        for (auto &item : matrix)
         {
             std::size_t x;
             std::size_t y;
