@@ -10,9 +10,6 @@
 template <typename T, T def_val, std::size_t dimension = 2>
 class Matrix
 {
-public:
-  using value_type = T;
-
 private:
   class MatrixStorage
   {
@@ -20,21 +17,32 @@ private:
     using index_tuple_type = typename generate_tuple<std::size_t, dimension>::type;
     using tuple_type = decltype(
         std::tuple_cat(index_tuple_type{},
-                       std::make_tuple(value_type{})));
-    std::set<tuple_type> _storage_set;
+                       std::make_tuple(T{})));
+    std::set<tuple_type, my_less_tuple<dimension, tuple_type>> _storage_set;
 
   public:
-    void set_element(const index_tuple_type &tupl, const value_type &val)
+    void set_element(const index_tuple_type &tupl, const T &val)
     {
-      tuple_type _tmp = std::tuple_cat(tupl, std::make_tuple(val));
-      _storage_set.insert(_tmp);
+      tuple_type tmp_tuple = std::tuple_cat(tupl, std::make_tuple(val));
+      auto iter = _storage_set.find(tmp_tuple);
+      if (iter != _storage_set.cend())
+      {
+        if (std::get<dimension>(*iter) != val)
+          _storage_set.erase(iter);
+      }
+      if (val != def_val)
+        _storage_set.insert(tmp_tuple);
     }
     auto get_size() const { return _storage_set.size(); }
     T get_element(const index_tuple_type &tupl)
     {
-      /*auto it = _storage_map.find(tupl);
-      if (it != _storage_map.end())
-        return it->second;*/
+      tuple_type tmp_tuple = std::tuple_cat(
+          tupl, std::make_tuple(T{}));
+      auto iter = _storage_set.find(tmp_tuple);
+      if (iter != _storage_set.cend())
+      {
+        return std::get<dimension>(*iter);
+      }
       return def_val;
     }
 
@@ -43,7 +51,6 @@ private:
     auto get_end() noexcept { return _storage_set.end(); }
     auto get_cbegin() const noexcept { return _storage_set.cbegin(); }
     auto get_cend() const noexcept { return _storage_set.cend(); }
-    
   };
 
   template <typename TUPLE>
@@ -51,7 +58,7 @@ private:
   {
   public:
     explicit MatrixAdapter(Matrix *matrix, const TUPLE &my_tuple) : _matrix(matrix), _tuple(my_tuple) {}
-    auto &operator=(const value_type &rhs)
+    auto &operator=(const T &rhs)
     {
       if (_matrix->_storage)
         _matrix->_storage->set_element(_tuple, rhs);
@@ -63,10 +70,10 @@ private:
       using next_type = decltype(std::tuple_cat(_tuple, std::make_tuple(index)));
       return MatrixAdapter<next_type>(_matrix, std::tuple_cat(_tuple, std::make_tuple(index)));
     }
-    operator T()
+    operator T() const
     {
-      //if (_matrix->_storage)
-      //  return _matrix->_storage->get_element(_tuple);
+      if (_matrix->_storage)
+        return _matrix->_storage->get_element(_tuple);
 
       return def_val;
     }
@@ -82,7 +89,7 @@ public:
   {
   }
 
-  std::size_t size()
+  std::size_t size() const
   {
     if (_storage)
       return _storage->get_size();
@@ -96,7 +103,7 @@ public:
     return MatrixAdapter<std::tuple<std::size_t>>(this,
                                                   std::make_tuple(index));
   }
-  
+
   auto begin() noexcept { return _storage->get_begin(); }
   auto end() noexcept { return _storage->get_end(); }
   auto begin() const noexcept { return _storage->get_begin(); }
