@@ -2,6 +2,8 @@
 #include <cstddef>
 #include <iostream>
 #include <memory>
+#include <mutex>
+#include <thread>
 #include <tuple>
 #include <set>
 #include <iterator>
@@ -19,10 +21,12 @@ private:
         std::tuple_cat(index_tuple_type{},
                        std::make_tuple(T{})));
     std::set<tuple_type, my_less_tuple<dimension, tuple_type>> _storage_set;
+    std::mutex mtx;
 
   public:
     void set_element(const index_tuple_type &tupl, const T &val)
     {
+      std::scoped_lock<std::mutex> lock{mtx};
       tuple_type tmp_tuple = std::tuple_cat(tupl, std::make_tuple(val));
       auto iter = _storage_set.find(tmp_tuple);
       if (iter != _storage_set.cend())
@@ -38,6 +42,7 @@ private:
     {
       tuple_type tmp_tuple = std::tuple_cat(
           tupl, std::make_tuple(T{}));
+      std::scoped_lock<std::mutex> lock{mtx};
       auto iter = _storage_set.find(tmp_tuple);
       if (iter != _storage_set.cend())
       {
