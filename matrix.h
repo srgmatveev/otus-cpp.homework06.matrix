@@ -79,7 +79,6 @@ private:
     {
       if (_matrix->_storage)
         return _matrix->_storage->get_element(_tuple);
-
       return def_val;
     }
 
@@ -90,9 +89,7 @@ private:
   };
 
 public:
-  Matrix() : _storage(std::make_shared<MatrixStorage>())
-  {
-  }
+  Matrix() : _storage(std::make_shared<MatrixStorage>()) {}
 
   std::size_t size() const
   {

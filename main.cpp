@@ -42,45 +42,7 @@ int main(int argc, char const *argv[])
     {
         std::cerr << e.what() << std::endl;
     }
-/*
-    Matrix<int, -1, 1> matrix1;
-    assert(matrix1.size() == 0); // все ячейки свободны
-    auto a1 = matrix1[0];
-    assert(a1 == -1);
-    assert(matrix1.size() == 0);
-    matrix1[100] = 314;
-    assert(matrix1[100] == 314);
-    assert(matrix1.size() == 1);
-    // выведется одна строка
-    // 100314
-    for (auto c : matrix1)
-    {
-        int x;
-        int v;
-        std::tie(x, v) = c;
-        std::cout << x << v << std::endl;
-    }
 
-    Matrix<int, -1> matrix2;     // бесконечная матрица int заполнена значениями -1
-    assert(matrix2.size() == 0); // все ячейки свободны
-    auto a = matrix2[0][0];
-    assert(a == -1);
-    assert(matrix2.size() == 0);
-    matrix2[100][100] = 314;
-    assert(matrix2[100][100] == 314);
-    assert(matrix2.size() == 1);
-    ((matrix2[100][100] = 314) = 0) = 217;
-
-    // выведется одна строка
-    // 100100314
-    for (auto c : matrix2)
-    {
-        int x;
-        int y;
-        int v;
-        std::tie(x, y, v) = c;
-        std::cout << x << y << v << std::endl;
-    }
-*/
+    
     return 0;
 }
