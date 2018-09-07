@@ -2,11 +2,10 @@
 #include <cstddef>
 #include <iostream>
 #include <memory>
-#include <mutex>
-#include <thread>
 #include <tuple>
 #include <set>
 #include <iterator>
+#include <utility>
 #include "my_traits.h"
 
 template <typename T, T def_val, std::size_t dimension = 2>
@@ -21,12 +20,10 @@ private:
         std::tuple_cat(index_tuple_type{},
                        std::make_tuple(T{})));
     std::set<tuple_type, my_less_tuple<dimension, tuple_type>> _storage_set;
-    std::mutex mtx;
 
   public:
     void set_element(const index_tuple_type &tupl, const T &val)
     {
-      std::scoped_lock<std::mutex> lock{mtx};
       tuple_type tmp_tuple = std::tuple_cat(tupl, std::make_tuple(val));
       auto iter = _storage_set.find(tmp_tuple);
       if (iter != _storage_set.cend())
@@ -42,7 +39,6 @@ private:
     {
       tuple_type tmp_tuple = std::tuple_cat(
           tupl, std::make_tuple(T{}));
-      std::scoped_lock<std::mutex> lock{mtx};
       auto iter = _storage_set.find(tmp_tuple);
       if (iter != _storage_set.cend())
       {
@@ -56,6 +52,24 @@ private:
     auto get_end() noexcept { return _storage_set.end(); }
     auto get_cbegin() const noexcept { return _storage_set.cbegin(); }
     auto get_cend() const noexcept { return _storage_set.cend(); }
+
+    MatrixStorage() = default;
+    MatrixStorage(const MatrixStorage &rhs)
+    {
+      this->_storage_set.clear();
+      for (auto &item : rhs._storage_set)
+        this->_storage_set.insert(item);
+    }
+
+    MatrixStorage &operator=(const MatrixStorage &rhs)
+    {
+      if (this == &rhs)
+        return *this;
+      this->_storage_set.clear();
+      for (auto &item : rhs._storage_set)
+        this->_storage_set.insert(item);
+      return *this;
+    }
   };
 
   template <typename TUPLE>
@@ -84,21 +98,22 @@ private:
 
   private:
     Matrix *_matrix;
-    std::size_t _index{12};
+    std::size_t _index{0};
     TUPLE _tuple;
   };
 
 public:
   Matrix() : _storage(std::make_shared<MatrixStorage>()) {}
-
+  Matrix(const Matrix &);
+  Matrix(Matrix &&);
+  Matrix &operator=(const Matrix &);
+  Matrix &operator=(Matrix &&);
   std::size_t size() const
   {
     if (_storage)
       return _storage->get_size();
     return 0;
   }
-
-  virtual ~Matrix() {}
 
   auto operator[](const std::size_t &index)
   {
@@ -116,3 +131,38 @@ public:
 private:
   std::shared_ptr<MatrixStorage> _storage{nullptr};
 };
+
+template <typename T, T def_val, std::size_t dimension>
+Matrix<T, def_val, dimension>::Matrix(const Matrix<T, def_val, dimension> &rhs) : _storage{std::make_shared<MatrixStorage>(*rhs._storage)}
+{
+}
+
+template <typename T, T def_val, std::size_t dimension>
+Matrix<T, def_val, dimension>::Matrix(Matrix<T, def_val, dimension> &&rhs)
+{
+  if (this != &rhs)
+  {
+    std::swap(_storage, rhs._storage);
+  }
+}
+
+template <typename T, T def_val, std::size_t dimension>
+Matrix<T, def_val, dimension> &Matrix<T, def_val, dimension>::operator=(const Matrix<T, def_val, dimension> &rhs)
+{
+  if (this == &rhs)
+    return *this;
+  *(_storage) = *(rhs._storage);
+  return *this;
+}
+
+template <typename T, T def_val, std::size_t dimension>
+Matrix<T, def_val, dimension> &Matrix<T, def_val, dimension>::operator=(Matrix<T, def_val, dimension> &&rhs)
+{
+  if (this != &rhs)
+  {
+    if (_storage)
+      _storage = nullptr;
+    std::swap(_storage, rhs._storage);
+  }
+  return *this;
+}

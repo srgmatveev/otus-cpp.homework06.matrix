@@ -9,7 +9,7 @@ int main(int argc, char const *argv[])
     try
     {
         Matrix<int, 0> matrix;
-
+       
         for (auto i{0}; i < 10; ++i)
         {
             matrix[i][i] = i;
@@ -43,6 +43,5 @@ int main(int argc, char const *argv[])
         std::cerr << e.what() << std::endl;
     }
 
-    
     return 0;
 }
