@@ -70,6 +70,8 @@ private:
         this->_storage_set.insert(item);
       return *this;
     }
+
+    bool operator==(const MatrixStorage &);
   };
 
   template <typename TUPLE>
@@ -108,6 +110,7 @@ public:
   Matrix(Matrix &&);
   Matrix &operator=(const Matrix &);
   Matrix &operator=(Matrix &&);
+  bool operator==(const Matrix &);
   std::size_t size() const
   {
     if (_storage)
@@ -166,3 +169,30 @@ Matrix<T, def_val, dimension> &Matrix<T, def_val, dimension>::operator=(Matrix<T
   }
   return *this;
 }
+
+template <typename T, T def_val, std::size_t dimension>
+bool Matrix<T, def_val, dimension>::operator==(const Matrix<T, def_val, dimension> &rhs)
+{
+  if (this == &rhs)
+    return true;
+  if (this)
+  {
+    if (this->_storage == rhs._storage)
+      return true;
+    if (*this->_storage == *rhs._storage)
+      return true;
+  }
+  return false;
+}
+
+#define M_Storage_type Matrix<T, def_val, dimension>::MatrixStorage
+
+template <typename T, T def_val, std::size_t dimension>
+bool M_Storage_type::operator==(const M_Storage_type &rhs)
+{
+  if (this->_storage_set == rhs._storage_set)
+    return true;
+
+  return false;
+}
+#undef M_Storage_type

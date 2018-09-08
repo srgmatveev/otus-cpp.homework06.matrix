@@ -472,3 +472,41 @@ TEST(Matrix_Test_case, Move_Operator_Matrix_Test)
     ASSERT_THAT(output, result);
     ASSERT_THAT(matrix1.size(), 18);
 }
+
+TEST(Matrix_Test_case, Equal_Matrix_Test)
+{
+    Matrix<int, 0> matrix;
+    Matrix<int, 0> matrix1;
+    ASSERT_TRUE(matrix == matrix);
+    ASSERT_TRUE(matrix == matrix1);
+
+    for (auto i{0}; i < 10; ++i)
+    {
+        matrix[i][i] = i;
+        matrix[i][9 - i] = 9 - i;
+    }
+
+    for (auto i{0}; i < 10; ++i)
+    {
+        matrix1[i][i] = i;
+        matrix1[i][9 - i] = 9 - i;
+    }
+
+    ASSERT_TRUE(matrix == matrix1);
+
+    for (auto i{0}; i < 10; ++i)
+    {
+        matrix1[i][i] = 2 * i;
+        matrix1[i][9 - i] = 2 * (9 - i);
+    }
+    ASSERT_FALSE(matrix == matrix1);
+    ASSERT_TRUE(matrix1 == matrix1);
+    ASSERT_TRUE(matrix == matrix);
+
+    for (auto i{0}; i < 10; ++i)
+    {
+        matrix1[i][i] = i;
+        matrix1[i][9 - i] = 9 - i;
+    }
+    ASSERT_TRUE(matrix == matrix1);
+}
